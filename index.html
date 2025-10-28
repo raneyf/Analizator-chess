@@ -139,7 +139,6 @@
         
         .evaluation-buttons {
             display: grid;
-
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             margin-top: 15px;
@@ -300,8 +299,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-chess-board"></i> Анализатор шахматных партий</h1>
-
-<p class="subtitle">Анализируйте ходы и оценивайте их качество с помощью стандартных шахматных обозначений</p>
+            <p class="subtitle">Анализируйте ходы и оценивайте их качество с помощью стандартных шахматных обозначений</p>
         </header>
         
         <div class="main-content">
@@ -374,7 +372,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             const boardElement = document.getElementById('board');
             const movesBody = document.getElementById('moves-body');
             const statusElement = document.getElementById('status');
@@ -401,7 +398,7 @@
                 for (let rank = 7; rank >= 0; rank--) {
                     for (let file = 0; file < 8; file++) {
                         const square = document.createElement('div');
-                        square.className = square ${(rank + file) % 2 === 0 ? 'white' : 'black'};
+                        square.className = `square ${(rank + file) % 2 === 0 ? 'white' : 'black'}`;
                         square.dataset.square = files[file] + (rank + 1);
                         
                         const piece = game.get(files[file] + (rank + 1));
@@ -421,23 +418,23 @@
                 let status = '';
                 
                 if (game.in_checkmate()) {
-                    status = Мат! Победа ${game.turn() === 'w' ? 'черных' : 'белых'};
+                    status = `Мат! Победа ${game.turn() === 'w' ? 'черных' : 'белых'}`;
                 } else if (game.in_draw()) {
                     status = 'Ничья!';
                 } else {
-                    status = Ход ${game.turn() === 'w' ? 'белых' : 'черных'};
+                    status = `Ход ${game.turn() === 'w' ? 'белых' : 'черных'}`;
                     if (game.in_check()) {
                         status += ', шах';
                     }
                 }
                 
                 statusElement.textContent = status;
-                moveCounterElement.textContent = Ход: ${Math.ceil(currentMoveIndex / 2) + (currentMoveIndex % 2 === 0 ? 0 : 0.5)};
+                moveCounterElement.textContent = `Ход: ${Math.ceil(currentMoveIndex / 2) + (currentMoveIndex % 2 === 0 ? 0 : 0.5)}`;
             }
             
             function handleSquareClick(e) {
                 const square = e.target.dataset.square;
-                alert(Выбрана клетка: ${square}. В полнофункциональном приложении здесь можно было бы делать ходы.);
+                alert(`Выбрана клетка: ${square}. В полнофункциональном приложении здесь можно было бы делать ходы.`);
             }
             
             function updateMovesTable() {
@@ -448,7 +445,6 @@
                 for (let i = 0; i < moves.length; i += 2) {
                     movesWithNumbers.push({
                         number: Math.floor(i / 2) + 1,
-
                         white: moves[i],
                         black: moves[i + 1] || ''
                     });
@@ -461,16 +457,15 @@
                     }
                     
                     row.innerHTML = 
-                        <td>${move.number}</td>
-                        <td class="move-cell" data-move-index="${(move.number - 1) * 2}">
-                            ${move.white}
-                            ${moveEvaluations[(move.number - 1) * 2] ? <span class="evaluation">${moveEvaluations[(move.number - 1) * 2]}</span> : ''}
-                        </td>
-                        <td class="move-cell" data-move-index="${(move.number - 1) * 2 + 1}">
-                            ${move.black}
-                            ${moveEvaluations[(move.number - 1) * 2 + 1] ? <span class="evaluation">${moveEvaluations[(move.number - 1) * 2 + 1]}</span> : ''}
-                        </td>
-                    ;
+                        `<td>${move.number}</td>
+                         <td class="move-cell" data-move-index="${(move.number - 1) * 2}">
+                             ${move.white}
+                             ${moveEvaluations[(move.number - 1) * 2] ? `<span class="evaluation">${moveEvaluations[(move.number - 1) * 2]}</span>` : ''}
+                         </td>
+                         <td class="move-cell" data-move-index="${(move.number - 1) * 2 + 1}">
+                             ${move.black}
+                             ${moveEvaluations[(move.number - 1) * 2 + 1] ? `<span class="evaluation">${moveEvaluations[(move.number - 1) * 2 + 1]}</span>` : ''}
+                         </td>`;
                     
                     movesBody.appendChild(row);
                 });
@@ -486,8 +481,7 @@
             function selectMove(moveIndex) {
                 currentMoveIndex = moveIndex;
                 updateMovesTable();
-                
-                alert(Выбран ход с индексом ${moveIndex}. В полнофункциональном приложении можно было бы перейти к этому ходу на доске.);
+                alert(`Выбран ход с индексом ${moveIndex}. В полнофункциональном приложении можно было бы перейти к этому ходу на доске.`);
             }
             
             loadPgnBtn.addEventListener('click', function() {
@@ -526,8 +520,7 @@
                     currentMoveIndex++;
                     updateMovesTable();
                     alert('Переход к следующему ходу. В полнофункциональном приложении доска обновилась бы.');
-
-}
+                }
             });
             
             evalButtons.forEach(button => {
@@ -536,7 +529,7 @@
                         const evaluation = this.dataset.eval;
                         moveEvaluations[currentMoveIndex] = evaluation;
                         updateMovesTable();
-                        alert(Ход ${currentMoveIndex} оценен как: ${evaluation});
+                        alert(`Ход ${currentMoveIndex} оценен как: ${evaluation}`);
                     } else {
                         alert('Пожалуйста, выберите ход для оценки.');
                     }
