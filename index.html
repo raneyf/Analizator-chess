@@ -308,7 +308,6 @@ grid-template-columns: repeat(5, 1fr);
             <div class="chess-board-container">
                 <h2>Шахматная доска</h2>
                 <div class="board" id="board">
-                    <!-- Доска будет сгенерирована JavaScript -->
                 </div>
                 <div class="game-info">
                     <div class="status" id="status">Ход белых</div>
@@ -332,4 +331,225 @@ grid-template-columns: repeat(5, 1fr);
 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 10. d4 Nbd7 11. Nbd2 Bb7 12. Bc2 Re8 13. Nf1 Bf8 14. Ng3 g6 15. a4 c5 16. d5 c4 17. Bg5 h6 18. Be3 Nc5 19. Qd2 Kh7 20. Bh6 Bh8 21. b4 cxb3 22. Bxb3 Nxb3 23. Qxb3 Rc8 24. Rec1 Qc7 25. Qb4 Rc4 26. Qb1 Qc5 27. Nd2 Rxc3 28. Rxc3 Qxc3 29. Qxb5 Qxa1 30. Qxb7 Qc3 31. Qb1 Qc7 32. Kh2 Ng8 33. f4 exf4 34. Bxf4 Ne7 35. Qb5 Re5 36. Qb1 Kg8 37. Nf3 Rc5 38. Nd4 Nf5 39. Nxf5 gxf5 40. exf5 Bxd5 41. Qb3+ Kg7 42. Bh6+ Kxh6 43. Qxd5 Qc2+ 44. Kh1 Qf2 0-1"></textarea>
                     </div>
                     <div class="button-group">
-                        <button id="load-pgn-btn"><i
+                        <button id="load-pgn-btn"><i class="fas fa-upload"></i> Загрузить PGN</button>
+                        <button id="start-btn"><i class="fas fa-play"></i> Новая партия</button>
+                        <button id="prev-btn"><i class="fas fa-step-backward"></i> Назад</button>
+                        <button id="next-btn"><i class="fas fa-step-forward"></i> Вперед</button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>Оценка ходов</h2>
+                    <p>Выберите ход в таблице и оцените его качество:</p>
+                    <div class="evaluation-buttons">
+                        <div class="eval-btn blunder" data-eval="??">?? (Грубая ошибка)</div>
+                        <div class="eval-btn mistake" data-eval="?">? (Ошибка)</div>
+                        <div class="eval-btn dubious" data-eval="!?">!? (Сомнительный ход)</div>
+                        <div class="eval-btn good" data-eval="!">! (Хороший ход)</div>
+                        <div class="eval-btn excellent" data-eval="!!">!! (Отличный ход)</div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>Ходы партии</h2>
+                    <table class="moves-table" id="moves-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Белые</th>
+                                <th>Черные</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moves-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Анализатор шахматных партий &copy; 2023 | Создано для удобного анализа ходов</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const boardElement = document.getElementById('board');
+            const movesBody = document.getElementById('moves-body');
+            const statusElement = document.getElementById('status');
+            const moveCounterElement = document.getElementById('move-counter');
+            const pgnInput = document.getElementById('pgn-input');
+            const loadPgnBtn = document.getElementById('load-pgn-btn');
+            const startBtn = document.getElementById('start-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const evalButtons = document.querySelectorAll('.eval-btn');
+            
+            let game = new Chess();
+            let currentMoveIndex = 0;
+            let moveEvaluations = {};
+            
+            // Создание шахматной доски
+            function createBoard() {
+                boardElement.innerHTML = '';
+                const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                const pieces = {
+                    'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟',
+                    'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙'
+                };
+                
+                for (let rank = 7; rank >= 0; rank--) {
+                    for (let file = 0; file < 8; file++) {
+                        const square = document.createElement('div');
+                        square.className = square ${(rank + file) % 2 === 0 ? 'white' : 'black'};
+                        square.dataset.square = files[file] + (rank + 1);
+                        
+                        const piece = game.get(files[file] + (rank + 1));
+                        if (piece) {
+                            square.textContent = pieces[piece.color === 'w' ? piece.type.toUpperCase() : piece.type];
+                        }
+                        
+                        square.addEventListener('click', handleSquareClick);
+                        boardElement.appendChild(square);
+                    }
+                }
+                
+                updateStatus();
+            }
+            
+            // Обновление статуса игры
+            function updateStatus() {
+                let status = '';
+                
+                if (game.in_checkmate()) {
+                    status = Мат! Победа ${game.turn() === 'w' ? 'черных' : 'белых'};
+                } else if (game.in_draw()) {
+                    status = 'Ничья!';
+                } else {
+                    status = Ход ${game.turn() === 'w' ? 'белых' : 'черных'};
+                    if (game.in_check()) {
+                        status += ', шах';
+                    }
+                }
+                
+                statusElement.textContent = status;
+                moveCounterElement.textContent = Ход: ${Math.ceil(currentMoveIndex / 2) + (currentMoveIndex % 2 === 0 ? 0 : 0.5)};
+            }
+            
+            // Обработка клика по клетке
+            function handleSquareClick(e) {
+                const square = e.target.dataset.square;
+                // В реальном приложении здесь была бы логика для перемещения фигур
+                // Для демонстрации просто покажем сообщение
+                alert(Выбрана клетка: ${square}. В полнофункциональном приложении здесь можно было бы делать ходы.);
+            }
+            
+            // Обновление таблицы ходов
+            function updateMovesTable() {
+                movesBody.innerHTML = '';
+                const moves = game.history();
+                const movesWithNumbers = [];
+                
+                for (let i = 0; i < moves.length; i += 2) {
+                    movesWithNumbers.push({
+                        number: Math.floor(i / 2) + 1,
+
+white: moves[i],
+                        black: moves[i + 1] || ''
+                    });
+                }
+                
+                movesWithNumbers.forEach(move => {
+                    const row = document.createElement('tr');
+                    if (currentMoveIndex === (move.number - 1) * 2) {
+                        row.classList.add('current-move');
+                    }
+                    
+                    row.innerHTML = 
+                        <td>${move.number}</td>
+                        <td class="move-cell" data-move-index="${(move.number - 1) * 2}">
+                            ${move.white}
+                            ${moveEvaluations[(move.number - 1) * 2] ? <span class="evaluation">${moveEvaluations[(move.number - 1) * 2]}</span> : ''}
+                        </td>
+                        <td class="move-cell" data-move-index="${(move.number - 1) * 2 + 1}">
+                            ${move.black}
+                            ${moveEvaluations[(move.number - 1) * 2 + 1] ? <span class="evaluation">${moveEvaluations[(move.number - 1) * 2 + 1]}</span> : ''}
+                        </td>
+                    ;
+                    
+                    movesBody.appendChild(row);
+                });
+                
+                document.querySelectorAll('.move-cell').forEach(cell => {
+                    cell.addEventListener('click', function() {
+                        const moveIndex = parseInt(this.dataset.moveIndex);
+                        selectMove(moveIndex);
+                    });
+                });
+            }
+            
+            function selectMove(moveIndex) {
+                currentMoveIndex = moveIndex;
+                updateMovesTable();
+                
+                alert(Выбран ход с индексом ${moveIndex}. В полнофункциональном приложении можно было бы перейти к этому ходу на доске.);
+            }
+            
+            loadPgnBtn.addEventListener('click', function() {
+                try {
+                    game.load_pgn(pgnInput.value);
+                    currentMoveIndex = game.history().length;
+                    createBoard();
+                    updateMovesTable();
+                    alert('Партия успешно загружена!');
+                } catch (e) {
+                    alert('Ошибка при загрузке PGN: ' + e.message);
+                }
+            });
+            
+            startBtn.addEventListener('click', function() {
+                game = new Chess();
+                currentMoveIndex = 0;
+                moveEvaluations = {};
+                createBoard();
+                updateMovesTable();
+                pgnInput.value = '';
+                alert('Новая партия начата!');
+            });
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentMoveIndex > 0) {
+                    currentMoveIndex--;
+                    updateMovesTable();
+                    alert('Переход к предыдущему ходу. В полнофункциональном приложении доска обновилась бы.');
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                const moves = game.history();
+                if (currentMoveIndex < moves.length) {
+                    currentMoveIndex++;
+                    updateMovesTable();
+                    alert('Переход к следующему ходу. В полнофункциональном приложении доска обновилась бы.');
+
+}
+            });
+            
+            evalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (currentMoveIndex > 0) {
+                        const evaluation = this.dataset.eval;
+                        moveEvaluations[currentMoveIndex] = evaluation;
+                        updateMovesTable();
+                        alert(Ход ${currentMoveIndex} оценен как: ${evaluation});
+                    } else {
+                        alert('Пожалуйста, выберите ход для оценки.');
+                    }
+                });
+            });
+            
+            createBoard();
+            updateMovesTable();
+            
+            setT
