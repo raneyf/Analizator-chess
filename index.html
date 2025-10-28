@@ -140,7 +140,7 @@
         .evaluation-buttons {
             display: grid;
 
-grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             margin-top: 15px;
         }
@@ -390,7 +390,6 @@ grid-template-columns: repeat(5, 1fr);
             let currentMoveIndex = 0;
             let moveEvaluations = {};
             
-            // Создание шахматной доски
             function createBoard() {
                 boardElement.innerHTML = '';
                 const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -418,7 +417,6 @@ grid-template-columns: repeat(5, 1fr);
                 updateStatus();
             }
             
-            // Обновление статуса игры
             function updateStatus() {
                 let status = '';
                 
@@ -437,15 +435,11 @@ grid-template-columns: repeat(5, 1fr);
                 moveCounterElement.textContent = Ход: ${Math.ceil(currentMoveIndex / 2) + (currentMoveIndex % 2 === 0 ? 0 : 0.5)};
             }
             
-            // Обработка клика по клетке
             function handleSquareClick(e) {
                 const square = e.target.dataset.square;
-                // В реальном приложении здесь была бы логика для перемещения фигур
-                // Для демонстрации просто покажем сообщение
                 alert(Выбрана клетка: ${square}. В полнофункциональном приложении здесь можно было бы делать ходы.);
             }
             
-            // Обновление таблицы ходов
             function updateMovesTable() {
                 movesBody.innerHTML = '';
                 const moves = game.history();
@@ -455,7 +449,7 @@ grid-template-columns: repeat(5, 1fr);
                     movesWithNumbers.push({
                         number: Math.floor(i / 2) + 1,
 
-white: moves[i],
+                        white: moves[i],
                         black: moves[i + 1] || ''
                     });
                 }
