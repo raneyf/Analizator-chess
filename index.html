@@ -546,4 +546,15 @@
             createBoard();
             updateMovesTable();
             
-            setT
+            setTimeout(() => {
+                moveEvaluations[1] = '!';
+                moveEvaluations[4] = '?';
+                moveEvaluations[7] = '!!';
+                moveEvaluations[10] = '??';
+                moveEvaluations[15] = '!?';
+                updateMovesTable();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
